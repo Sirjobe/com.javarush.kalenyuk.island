@@ -1,4 +1,28 @@
 package island.entity.creature.plant;
 
-public class Plant {
+import island.entity.creature.Eatable;
+
+public class Plant implements Eatable {
+    private int count;
+    private final int countMAX = 200;
+    private final int weightPlant = 1;
+
+
+    public void grow(){
+        if(count!=countMAX){
+            count++;
+        }
+    }
+    public boolean consume(){
+        if(count>0){
+            count--;
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public double getNutritionalValue() {
+        return weightPlant;
+    }
 }

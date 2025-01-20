@@ -1,4 +1,4 @@
 package island.entity.creature.animal.herbivore;
 
-public class Herbivore {
+public interface Herbivore {
 }
