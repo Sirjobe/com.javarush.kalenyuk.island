@@ -33,6 +33,21 @@ public class Settings {
         goatProbability.put(Plant.class,1.0);
         PROBABILITY_EAT_ANIMAL.put(Goat.class,goatProbability);
     }
+    //Количество рождаемого потомка
+    public static final Map<Class<?extends Animal>,Integer> OFFSPRING_COUNT = new HashMap<>();
+    static {
+        OFFSPRING_COUNT.put(Buffalo.class,1);
+        OFFSPRING_COUNT.put(Goat.class,1);
+        OFFSPRING_COUNT.put(Wolf.class,1);
+    }
+    // Изображение сущности
+    public static final Map<Class<?extends Eatable>,String> ENTITY_ICONS = new HashMap<>();
+    static {
+        ENTITY_ICONS.put(Buffalo.class,"\uD83D\uDC03");
+        ENTITY_ICONS.put(Goat.class,"\uD83D\uDC11");
+        ENTITY_ICONS.put(Wolf.class,"\uD83D\uDC3A");
+        ENTITY_ICONS.put(Plant.class,"\uD83C\uDF31");
+    }
 
 
 

@@ -13,18 +13,35 @@ public abstract class Animal implements Eatable {
     protected   int maxNumberCell; // Максимальное количество животного в клетке
     protected   int movementSpeed; // Скорость перемещения
     protected   double foodNeeded; // Количество пищи для насыщения
+    protected   double satiety; // Текущая сытость
 
     public Animal(int weight, int maxNumberCell, int movementSpeed, double foodNeeded) {
         this.weight = weight;
         this.maxNumberCell = maxNumberCell;
         this.movementSpeed = movementSpeed;
         this.foodNeeded = foodNeeded;
+        this.satiety = foodNeeded;
     }
 
     @Override
     public double getNutritionalValue() {
         return weight;
     }
+    public int getMaxInCell(){
+        return maxNumberCell;
+    }
+    // флаг смерти животного
+    public boolean isDead(){
+        return this.satiety<=0;
+    }
+    // метод для уменьшения сытости
+    public void decreaseSatiety(){
+        this.satiety -=1.0;
+        if (this.satiety<0){
+            this.satiety = 0;
+        }
+    }
+
     public double getEatingProbability (Eatable target){
         Map<Class<?extends Eatable >, Double> probabilities = Settings.PROBABILITY_EAT_ANIMAL.get(target);
         if(probabilities != null){
@@ -45,12 +62,14 @@ public abstract class Animal implements Eatable {
         }
 
     }
-    // Питание
+    // Питание (Переписать с учетом, что все могут есть траву, а также реализовать много поточный Random)
     public void eat (Location location){
         if (this instanceof Herbivore){
             if (location.getPlant().consume()) { // метод уменьшения количества растений
+                this.satiety += 1;
                 System.out.println(this.getClass().getSimpleName() + " съел растения."); // удалить после проверки
             }else {
+                this.decreaseSatiety();
                 System.out.println(this.getClass().getSimpleName() + " не нашел растений."); // удалить после проверки
             }
         } else if (this instanceof Predator) {
@@ -58,14 +77,44 @@ public abstract class Animal implements Eatable {
             Animal prey = location.getRandomHerbivore(); //Поиск случайного травоядного в клетке
             if(prey!= null && Math.random()<getEatingProbability(prey)){
                 location.removeAnimal(prey);
+                this.satiety += 1;
             }else {
                 System.out.println(this.getClass().getSimpleName() + " не нашел добычи."); // удалить после проверки
+                this.decreaseSatiety();
             }
 
         }
     }
-    public abstract void reproduce (Location location); // Размножение
+    // Размножение
+    public  void reproduce (Location location){
+        long sameSpeciesCount = location.getAnimals().stream() // количество животных в одной клетке
+                .filter(a->getClass().equals(this.getClass()))
+                .count();
+        if(sameSpeciesCount>=2 && location.canAddAnimal(this)){ // проверка условий для размножения
+            int offspringCount = Settings.OFFSPRING_COUNT.getOrDefault(this.getClass(),1);// Значение по умолчанию
+            // Добавляем потомков в клетку
+            for (int i = 0; i<offspringCount; i++){
+                if(location.canAddAnimal(this)){// Проверка на добавление нового потомка
+                    Animal newAnimal = AnimalFactory.create(this.getClass());
+                    location.addAnimal(newAnimal);
+                    System.out.println(this.getClass().getSimpleName()+"Размножились в клетке");
+                }else {
+                    System.out.println("Клетка переполнена. Потомок не добавлен.");
+                    break;
+                }
+            }
 
+
+        }
+    }
+
+    // проверка мертвое животное или нет
+    public void death (Location location){
+        if (this.isDead()){
+            location.removeAnimal(this);
+            System.out.println(this.getClass().getSimpleName() + " умер от голода.");
+        }
+    }
 
 
 }

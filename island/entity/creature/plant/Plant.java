@@ -25,4 +25,7 @@ public class Plant implements Eatable {
     public double getNutritionalValue() {
         return weightPlant;
     }
+    public int getCount(){
+        return count;
+    }
 }
