@@ -17,12 +17,10 @@ public class AnimalFactory {
         animalSuppliers.put(Wolf.class, Wolf::new);
     }
     public static Animal create(Class<?extends Animal> animalClass){
-        // Поиск Supplier для переданного класса
-        Supplier<? extends Animal> supplier = animalSuppliers.get(animalClass);
-        if (supplier != null){
-            return supplier.get();
-        }else {
-            throw  new IllegalArgumentException("Неизвестный тип животного" + animalClass);
+        try {
+            return animalClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Ошибка создания животного: " + animalClass, e);
         }
     }
 }

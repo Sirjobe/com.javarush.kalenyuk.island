@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class Location {
-    private List<Animal> animals = new ArrayList<>();
-    private Plant plant = new Plant();
+    private final CopyOnWriteArrayList<Animal> animals = new CopyOnWriteArrayList<>();
+    private final Plant plant = new Plant();
 
 
     public List<Animal> getAnimals(){
@@ -46,21 +47,21 @@ public class Location {
         return herbivores.isEmpty()? null : herbivores.get(new Random().nextInt(herbivores.size()));
     }
     public void growPlants(){
-        plant.getNutritionalValue();
+        plant.grow();
     }
-//    @Override
-//    public String toString() {
-//        StringBuilder builder = new StringBuilder();
-//        //подсчитываем количество каждого вида животного
-//        Map<Class<?>,Long> animalCounts = animals.stream()
-//                .count();
-//        //добавляем информацию о животных
-//        for (Map.Entry<Class<?>,Long>entry:animalCounts.entrySet()){
-//            Class<?> animalClass = entry.getKey();
-//            long count = entry.getValue();
-//            //получаем эмодзи для животного
-//            String icon = Settings.ENTITY_ICONS.getOrDefault(animalClass,"?");
-//            builder.append(icon).append(":").append(count).append(plant.getCount());
-//        }
-//    }
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        //подсчитываем количество каждого вида животного
+        Map<Class<?>,Long> animalCounts = animals.stream()
+                .collect(Collectors.groupingBy(Animal::getClass, Collectors.counting()));
+        //добавляем информацию о животных
+        animalCounts.forEach((animalClass, count) -> {
+            String icon = Settings.ENTITY_ICONS.getOrDefault(animalClass, "?");
+            builder.append(icon).append(":").append(count).append(" ");
+        });
+        builder.append("Plants: ").append(plant.getCount());
+        return builder.toString();
+
+    }
 }

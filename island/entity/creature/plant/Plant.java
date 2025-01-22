@@ -28,4 +28,10 @@ public class Plant implements Eatable {
     public int getCount(){
         return count;
     }
+    public int getCountMAX(){
+        return countMAX;
+    }
+    public void setCount(int count){
+        this.count = Math.min(count,countMAX);
+    }
 }

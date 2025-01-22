@@ -13,9 +13,12 @@ import java.util.Map;
 public class Settings {
     public static final int ISLAND_WIDTH = 10;
     public static final int ISLAND_HEIGHT = 10;
-    public static final int INITIAL_BUFFALO_COUNT = 10;
-    public static final int INITIAL_GOAT_COUNT = 5;
-    public static final int INITIAL_WOLF_COUNT = 10;
+    //Количество животных создаваемых на острове
+    public static final Map<Class<?extends Animal>,Integer> INITIAL_COUNT = Map.of(
+            Buffalo.class,10,
+            Goat.class,10,
+            Wolf.class,5
+    );
     //1_Ключ-MAP - класс хищник, 2_Ключ-MAP - класс жертв, Значение - вероятность поедания;
     public static final Map<Class<?extends Animal>,Map<Class<?extends Eatable>,Double>> PROBABILITY_EAT_ANIMAL = new HashMap<>();
     static {
@@ -33,7 +36,7 @@ public class Settings {
         goatProbability.put(Plant.class,1.0);
         PROBABILITY_EAT_ANIMAL.put(Goat.class,goatProbability);
     }
-    //Количество рождаемого потомка
+    //Количество рождаемого потомcтва
     public static final Map<Class<?extends Animal>,Integer> OFFSPRING_COUNT = new HashMap<>();
     static {
         OFFSPRING_COUNT.put(Buffalo.class,1);

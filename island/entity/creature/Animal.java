@@ -88,9 +88,9 @@ public abstract class Animal implements Eatable {
     // Размножение
     public  void reproduce (Location location){
         long sameSpeciesCount = location.getAnimals().stream() // количество животных в одной клетке
-                .filter(a->getClass().equals(this.getClass()))
+                .filter(a->a.getClass().equals(this.getClass()))
                 .count();
-        if(sameSpeciesCount>=2 && location.canAddAnimal(this)){ // проверка условий для размножения
+        if(sameSpeciesCount>=2 && location.canAddAnimal(this)&& this.satiety > foodNeeded / 2){ // проверка условий для размножения
             int offspringCount = Settings.OFFSPRING_COUNT.getOrDefault(this.getClass(),1);// Значение по умолчанию
             // Добавляем потомков в клетку
             for (int i = 0; i<offspringCount; i++){
