@@ -7,6 +7,7 @@ import island.entity.creature.animal.predactor.Predator;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class Animal implements Eatable {
     protected   int weight; // Вес животного
@@ -43,7 +44,7 @@ public abstract class Animal implements Eatable {
     }
 
     public double getEatingProbability (Eatable target){
-        Map<Class<?extends Eatable >, Double> probabilities = Settings.PROBABILITY_EAT_ANIMAL.get(target);
+        Map<Class<?extends Eatable >, Double> probabilities = Settings.PROBABILITY_EAT_ANIMAL.get(this.getClass());
         if(probabilities != null){
             return probabilities.getOrDefault(target.getClass(),0.0);
         }
@@ -51,70 +52,64 @@ public abstract class Animal implements Eatable {
     }
 
     // Передвижение
-    public void move (Island island, int columnsCount, int rowsCount){
-        Random random = new Random();
-        int newX = Math.max(0,Math.min(island.getWidth()-1,columnsCount+random.nextInt(2*movementSpeed+1)-movementSpeed));
-        int newY = Math.max(0,Math.min(island.getHeight()-1,rowsCount+ random.nextInt(2*movementSpeed+1)-movementSpeed));
-        if(newX!=columnsCount||newY!=rowsCount){
-            System.out.println(this.getClass().getSimpleName() + " переместился из [" + columnsCount + ", " + rowsCount + "] в [" + newX + ", " + newY + "]"); // удалить после проверки
-            island.getLocation(columnsCount,rowsCount).removeAnimal(this);
-            island.getLocation(newX,newY).addAnimal(this);
+    public void move (Island island, int currentX, int currentY){
+        Random random = ThreadLocalRandom.current();
+        int newX = Math.max(0,Math.min(island.getWidth()-1,currentX+random.nextInt(2*this.movementSpeed+1)-this.movementSpeed));
+        int newY = Math.max(0,Math.min(island.getHeight()-1,currentY+ random.nextInt(2*this.movementSpeed+1)-this.movementSpeed));
+        if(newX!=currentX||newY!=currentY){
+            synchronized (island.getLocation(currentX,currentY)) {
+                island.getLocation(currentX, currentY).removeAnimal(this);
+            }
+            synchronized (island.getLocation(newX,newY)){
+                island.getLocation(newX,newY).addAnimal(this);
+           }
         }
-
     }
     // Питание (Переписать с учетом, что все могут есть траву, а также реализовать много поточный Random)
-    public void eat (Location location){
-        if (this instanceof Herbivore){
-            if (location.getPlant().consume()) { // метод уменьшения количества растений
-                this.satiety += 1;
-                System.out.println(this.getClass().getSimpleName() + " съел растения."); // удалить после проверки
-            }else {
-                this.decreaseSatiety();
-                System.out.println(this.getClass().getSimpleName() + " не нашел растений."); // удалить после проверки
-            }
-        } else if (this instanceof Predator) {
-            // Поиск жертвы
-            Animal prey = location.getRandomHerbivore(); //Поиск случайного травоядного в клетке
-            if(prey!= null && Math.random()<getEatingProbability(prey)){
-                location.removeAnimal(prey);
-                this.satiety += 1;
-            }else {
-                System.out.println(this.getClass().getSimpleName() + " не нашел добычи."); // удалить после проверки
-                this.decreaseSatiety();
-            }
+    public void eat (Location location) {
+        synchronized (location) {
+            if (this instanceof Herbivore) {
+                if (location.getPlant().consume()) { // метод уменьшения количества растений
+                    this.satiety = Math.min(this.foodNeeded, this.satiety + 1);
+                    System.out.println(this.getClass().getSimpleName() + " ate a plant.");
+                } else {
+                    this.decreaseSatiety();
+                }
+            } else if (this instanceof Predator) {
+                // Поиск жертвы
+                Animal prey = location.getRandomHerbivore(); //Поиск случайного травоядного в клетке
+                if (prey != null && ThreadLocalRandom.current().nextDouble() < getEatingProbability(prey)) {
+                    location.removeAnimal(prey);
+                    this.satiety = Math.min(this.foodNeeded, this.satiety + prey.getNutritionalValue());
+                    System.out.println(this.getClass().getSimpleName() + " ate a plant."+prey);
+                } else {
+                    this.decreaseSatiety();
+                }
 
+            }
         }
     }
     // Размножение
-    public  void reproduce (Location location){
-        long sameSpeciesCount = location.getAnimals().stream() // количество животных в одной клетке
-                .filter(a->a.getClass().equals(this.getClass()))
-                .count();
-        if(sameSpeciesCount>=2 && location.canAddAnimal(this)&& this.satiety > foodNeeded / 2){ // проверка условий для размножения
-            int offspringCount = Settings.OFFSPRING_COUNT.getOrDefault(this.getClass(),1);// Значение по умолчанию
-            // Добавляем потомков в клетку
-            for (int i = 0; i<offspringCount; i++){
-                if(location.canAddAnimal(this)){// Проверка на добавление нового потомка
-                    Animal newAnimal = AnimalFactory.create(this.getClass());
-                    location.addAnimal(newAnimal);
-                    System.out.println(this.getClass().getSimpleName()+"Размножились в клетке");
-                }else {
-                    System.out.println("Клетка переполнена. Потомок не добавлен.");
-                    break;
+    public  void reproduce (Location location) {
+        synchronized (location) {
+            long sameSpeciesCount = location.getAnimals().stream() // количество животных в одной клетке
+                    .filter(a -> a.getClass().equals(this.getClass()))
+                    .count();
+            if (sameSpeciesCount >= 2 && location.canAddAnimal(this) && this.satiety > foodNeeded / 2) { // проверка условий для размножения
+                int offspringCount = Settings.OFFSPRING_COUNT.getOrDefault(this.getClass(), 1);// Значение по умолчанию
+                // Добавляем потомков в клетку
+                for (int i = 0; i < offspringCount; i++) {
+                    if (location.canAddAnimal(this)) {// Проверка на добавление нового потомка
+                        Animal newAnimal = AnimalFactory.create(this.getClass());
+                        location.addAnimal(newAnimal);
+                    } else {
+                        break;
+                    }
                 }
+
+
             }
-
-
         }
     }
-
-    // проверка мертвое животное или нет
-    public void death (Location location){
-        if (this.isDead()){
-            location.removeAnimal(this);
-            System.out.println(this.getClass().getSimpleName() + " умер от голода.");
-        }
-    }
-
 
 }

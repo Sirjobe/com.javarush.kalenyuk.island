@@ -41,31 +41,6 @@ public class Island {
         }
         return false;
     }
-    private static void processLocation(Location location, Island island, int x, int y){
-        location.getAnimals().forEach(animal -> {
-            animal.eat(location);
-            animal.reproduce(location);
-            animal.move(island,x,y);
-        });
-        //удаляем мертвых животных
-        location.getAnimals().removeIf(animal -> {
-            if(animal.isDead()){
-                System.out.println(animal.getClass().getSimpleName()+"умер.");
-                return true;
-            }
-            return false;
-        });
-        location.growPlants();
-    }
-
-    public void display(){
-        for (int i = 0; i < locations.length; i++) {
-            for (int j = 0; j < locations[i].length; j++) {
-                System.out.print(locations[i][j]+"|");
-            }
-            System.out.println("|");
-        }
-    }
 
     private static boolean allAnimalsCreated(Map<Class<? extends Animal>, Integer> counts,
                                              Map<Class<? extends Animal>, Integer> limits) {
@@ -102,6 +77,49 @@ public class Island {
             }
         }
     }
+    public void display(){
+        clearConsole();
+        System.out.println("Island State:");
+        for (int x = 0; x < getWidth(); x++) {
+            for (int y = 0; y < getHeight(); y++) {
+                Location location = getLocation(x, y);
+                Map<Class<?>, String> icons = Settings.ENTITY_ICONS;
+
+                StringBuilder cellRepresentation = new StringBuilder();
+                Map<String, Integer> counts = new HashMap<>();
+
+                location.getAnimals().forEach(animal -> {
+                    String icon = icons.getOrDefault(animal.getClass(), "?");
+                    counts.put(icon, counts.getOrDefault(icon, 0) + 1);
+                });
+
+                counts.forEach((icon, count) -> cellRepresentation.append(icon).append(count).append(" "));
+
+                if (location.getPlant().getCount() > 0) {
+                    String plantIcon = icons.getOrDefault(location.getPlant().getClass(), "?");
+                    cellRepresentation.append(plantIcon).append(location.getPlant().getCount());
+                }
+
+                System.out.print("[" + cellRepresentation.toString().trim() + "]");
+            }
+            System.out.println();
+        }
+
+    }
+    private void clearConsole() {
+        try {
+            final String os = System.getProperty("os.name");
+            if (os.contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
 }

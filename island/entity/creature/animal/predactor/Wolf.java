@@ -9,18 +9,5 @@ public class Wolf extends Animal implements Predator {
     public Wolf(){
         super(50,30,3,8);
     }
-    @Override
-    public void move(Island island, int columnsCount, int rowsCount) {
 
-    }
-
-    @Override
-    public void eat(Location location) {
-
-    }
-
-    @Override
-    public void reproduce(Location location) {
-
-    }
 }

@@ -9,18 +9,5 @@ public class Goat extends Animal implements Herbivore {
         super(70, 140, 3, 15);
     }
 
-    @Override
-    public void move(Island island, int columnsCount, int rowsCount) {
 
-    }
-
-    @Override
-    public void eat(Location location) {
-
-    }
-
-    @Override
-    public void reproduce(Location location) {
-
-    }
 }

@@ -8,12 +8,12 @@ public class Plant implements Eatable {
     private final int weightPlant = 1;
 
 
-    public void grow(){
+    public synchronized void grow(){
         if(count!=countMAX){
             count++;
         }
     }
-    public boolean consume(){
+    public synchronized boolean consume(){
         if(count>0){
             count--;
             return true;
@@ -25,13 +25,13 @@ public class Plant implements Eatable {
     public double getNutritionalValue() {
         return weightPlant;
     }
-    public int getCount(){
+    public synchronized int getCount(){
         return count;
     }
     public int getCountMAX(){
         return countMAX;
     }
-    public void setCount(int count){
+    public synchronized void setCount(int count){
         this.count = Math.min(count,countMAX);
     }
 }

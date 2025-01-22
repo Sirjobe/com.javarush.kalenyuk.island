@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Settings {
-    public static final int ISLAND_WIDTH = 10;
-    public static final int ISLAND_HEIGHT = 10;
+    public static final int ISLAND_WIDTH = 5;
+    public static final int ISLAND_HEIGHT = 5;
     //Количество животных создаваемых на острове
     public static final Map<Class<?extends Animal>,Integer> INITIAL_COUNT = Map.of(
             Buffalo.class,10,
@@ -44,7 +44,7 @@ public class Settings {
         OFFSPRING_COUNT.put(Wolf.class,1);
     }
     // Изображение сущности
-    public static final Map<Class<?extends Eatable>,String> ENTITY_ICONS = new HashMap<>();
+    public static final Map<Class<?>, String> ENTITY_ICONS = new HashMap<>();
     static {
         ENTITY_ICONS.put(Buffalo.class,"\uD83D\uDC03");
         ENTITY_ICONS.put(Goat.class,"\uD83D\uDC11");
