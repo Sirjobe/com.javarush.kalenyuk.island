@@ -3,16 +3,17 @@ package island.entity.creature;
 import island.entity.creature.animal.herbivore.Herbivore;
 import island.entity.creature.plant.Plant;
 
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ThreadLocalRandom;
+
 
 public class Location {
-    private final CopyOnWriteArrayList<Animal> animals = new CopyOnWriteArrayList<>();
+    private final Queue<Animal> animals = new ConcurrentLinkedQueue<>();
     private final Plant plant = new Plant();
 
 
-    public List<Animal> getAnimals(){
+    public Queue<Animal> getAnimals(){
         return animals;
     }
 
@@ -33,12 +34,13 @@ public class Location {
     }
     public void removeAnimal (Animal animal){
         animals.remove(animal);
+
     }
     public Animal getRandomHerbivore(){
         List<Animal> herbivores = animals.stream()
                 .filter(a-> a instanceof Herbivore)
                 .toList();
-        return herbivores.isEmpty()? null : herbivores.get(new Random().nextInt(herbivores.size()));
+        return herbivores.isEmpty()? null : herbivores.get(ThreadLocalRandom.current().nextInt(herbivores.size()));
     }
     public void growPlants(){
         plant.grow();

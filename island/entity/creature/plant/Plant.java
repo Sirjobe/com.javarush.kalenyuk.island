@@ -4,7 +4,7 @@ import island.entity.creature.Eatable;
 
 public class Plant implements Eatable {
     private int count;
-    private final int countMAX = 200;
+    private final int countMAX = 20;// 200
     private final int weightPlant = 1;
 
 

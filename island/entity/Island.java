@@ -5,6 +5,7 @@ import island.entity.creature.Animal;
 import island.entity.creature.AnimalFactory;
 import island.entity.creature.Location;
 
+import java.io.Console;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -77,9 +78,31 @@ public class Island {
             }
         }
     }
+    public void interact(){
+        for (int x=0; x<getWidth(); x++){
+            for (int y=0; y<getHeight();y++){
+                final int currentX = x; // Создаём локальную копию
+                final int currentY = y; // Создаём локальную копию
+                Location location = getLocation(x,y);
+                synchronized (location){
+                    location.getAnimals().forEach(animal -> {
+                        if (animal.isDead()){
+                            location.removeAnimal(animal);
+                            return;
+                        }
+                        animal.eat(location);
+                    });
+                    // Обработка размножения для всех животных
+                    Animal.reproduce(location);
+
+                    location.getAnimals().forEach(animal -> animal.move(this, currentX, currentY));
+                    location.getAnimals().removeIf(Animal::isDead);
+                    location.growPlants();
+                }
+            }
+        }
+    }
     public void display(){
-        clearConsole();
-        System.out.println("Island State:");
         for (int x = 0; x < getWidth(); x++) {
             for (int y = 0; y < getHeight(); y++) {
                 Location location = getLocation(x, y);
@@ -106,19 +129,7 @@ public class Island {
         }
 
     }
-    private void clearConsole() {
-        try {
-            final String os = System.getProperty("os.name");
-            if (os.contains("Windows")) {
-                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-            } else {
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+
 
 
 

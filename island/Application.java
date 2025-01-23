@@ -1,8 +1,6 @@
 package island;
 
 import island.entity.Island;
-import island.entity.creature.Animal;
-import island.entity.creature.Location;
 
 
 import java.util.concurrent.Executors;
@@ -23,26 +21,17 @@ public class Application {
             @Override
             public void run() {
                 if (cycle >= maxCycles || !island.hasAliveAnimals()) {
-                    System.out.println("Симуляция окончена");
+                    System.out.println("Симуляция окончена.");
                     executor.shutdown();
-                    executor.close();
                     return;
                 }
-                System.out.println("Такт: " + cycle + 1);
-                for (int x = 0; x < island.getWidth(); x++) {
-                    for (int y = 0; y < island.getHeight(); y++) {
-                        Location location = island.getLocation(x, y);
-                        int finalX = x;
-                        int finalY = y;
-                        location.getAnimals().forEach(animal -> {
-                            animal.eat(location);
-                            animal.reproduce(location);
-                            animal.move(island, finalX, finalY);
-                        });
-                        location.getAnimals().removeIf(Animal::isDead);
-                        location.growPlants();
-                    }
-                }
+                // Обновление консоли и вывод текущего такта
+                System.out.println("Такт: " + (cycle + 1)+" до изменений");
+                island.display();
+                // Выполнение логики симуляции для острова
+                island.interact();
+                // Обновление отображения острова
+                System.out.println("Такт: " + (cycle + 1)+" после изменений");
                 island.display();
                 cycle++;
             }
