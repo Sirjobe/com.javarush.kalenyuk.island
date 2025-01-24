@@ -14,14 +14,17 @@ public class Application {
         Island.populateIsland(island);
         //Создаем пул потоков
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
-        int maxCycles = 100;
+
         Runnable simulationTask = new Runnable() {
             int cycle = 0;
 
             @Override
             public void run() {
-                if (cycle >= maxCycles || !island.hasAliveAnimals()) {
+                if (island.checkGameOver()) {
                     System.out.println("Симуляция окончена.");
+                    if (island.checkGameOver()) {
+                        System.out.println("Причина завершения: " + (island.hasAliveAnimals() ? "остались только травоядные" : "все животные умерли"));
+                    }
                     executor.shutdown();
                     return;
                 }
@@ -36,7 +39,7 @@ public class Application {
                 cycle++;
             }
         };
-        executor.scheduleAtFixedRate(simulationTask, 0, 10, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(simulationTask, 0, 10, TimeUnit.MILLISECONDS);
     }
 }
 

@@ -4,11 +4,15 @@ import island.Settings;
 import island.entity.creature.Animal;
 import island.entity.creature.AnimalFactory;
 import island.entity.creature.Location;
+import island.entity.creature.animal.predactor.Predator;
 
 import java.io.Console;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Island {
     private Location[][] locations;
@@ -79,28 +83,66 @@ public class Island {
         }
     }
     public void interact(){
+        // Аул потоков для параллельной обработки локаций
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         for (int x=0; x<getWidth(); x++){
             for (int y=0; y<getHeight();y++){
                 final int currentX = x; // Создаём локальную копию
                 final int currentY = y; // Создаём локальную копию
-                Location location = getLocation(x,y);
-                synchronized (location){
-                    location.getAnimals().forEach(animal -> {
-                        if (animal.isDead()){
-                            location.removeAnimal(animal);
-                            return;
-                        }
-                        animal.eat(location);
-                    });
-                    // Обработка размножения для всех животных
-                    Animal.reproduce(location);
+                executor.submit(()->{
+                    Location location = getLocation(currentX,currentY);
+                    synchronized (location) {
+                        location.getAnimals().forEach(animal -> {
+                            if (animal.isDead()) {
+                                location.removeAnimal(animal);
+                                return;
+                            }
+                            animal.eat(location);
+                        });
+                        // Обработка размножения для всех животных
+                        Animal.reproduce(location);
+                        // Перемещение животных
+                        location.getAnimals().forEach(animal -> animal.move(this,currentX,currentY));
+                        // Удаление мертвых животных
+                        location.getAnimals().removeIf(Animal::isDead);
+                        //Рост растений
+                        location.growPlants();
+                    }
+                });
+            }
+        }
+        executor.shutdown();
+        try {
+            executor.awaitTermination(1, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    public boolean checkGameOver() {
+        boolean allAnimalsDead = true;
+        boolean onlyHerbivoresLeft = true;
 
-                    location.getAnimals().forEach(animal -> animal.move(this, currentX, currentY));
-                    location.getAnimals().removeIf(Animal::isDead);
-                    location.growPlants();
+        for (int x = 0; x < getWidth(); x++) {
+            for (int y = 0; y < getHeight(); y++) {
+                Location location = getLocation(x, y);
+                synchronized (location) {
+                    if (!location.getAnimals().isEmpty()) {
+                        allAnimalsDead = false; // Есть живые животные
+
+                        // Проверяем, есть ли хищники
+                        for (Animal animal : location.getAnimals()) {
+                            if (animal instanceof Predator) {
+                                onlyHerbivoresLeft = false; // Найден хищник
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
+
+        // Условие завершения: все животные умерли или остались только травоядные
+        return allAnimalsDead || onlyHerbivoresLeft;
     }
     public void display(){
         for (int x = 0; x < getWidth(); x++) {

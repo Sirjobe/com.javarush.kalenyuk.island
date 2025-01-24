@@ -10,25 +10,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Settings {
-    public static final int ISLAND_WIDTH = 100;
+    public static final int ISLAND_WIDTH = 30;
     public static final int ISLAND_HEIGHT = 20;
+    // Фиксированное значение снижения сытости за одну итерацию
+    public static final double SATIETY_DECREASE_PER_ITERATION = 2;
     //Количество животных создаваемых на острове
     public static final Map<Class<?extends Animal>,Integer> INITIAL_COUNT = new HashMap<>();
     static {
-        INITIAL_COUNT.put(Horse.class, 10);
-        INITIAL_COUNT.put(Deer.class,15);
-        INITIAL_COUNT.put(Rabbit.class,12);
-        INITIAL_COUNT.put(Mouse.class,13);
-        INITIAL_COUNT.put(Goat.class,14);
-        INITIAL_COUNT.put(Sheep.class,15);
-        INITIAL_COUNT.put(Buffalo.class,16);
-        INITIAL_COUNT.put(Duck.class,17);
-        INITIAL_COUNT.put(Caterpillar.class,18);
-        INITIAL_COUNT.put(Wolf.class,19);
-        INITIAL_COUNT.put(Boa.class,21);
-        INITIAL_COUNT.put(Fox.class,14);
-        INITIAL_COUNT.put(Bear.class,11);
-        INITIAL_COUNT.put(Eagle.class,9);
+        INITIAL_COUNT.put(Horse.class, 1000);
+        INITIAL_COUNT.put(Deer.class,1000);
+        INITIAL_COUNT.put(Rabbit.class,1000);
+        INITIAL_COUNT.put(Mouse.class,1000);
+        INITIAL_COUNT.put(Goat.class,1000);
+        INITIAL_COUNT.put(Sheep.class,1000);
+        INITIAL_COUNT.put(Buffalo.class,1000);
+        INITIAL_COUNT.put(Duck.class,100);
+        INITIAL_COUNT.put(Caterpillar.class,1000);
+        INITIAL_COUNT.put(Wolf.class,50);
+        INITIAL_COUNT.put(Boa.class,50);
+        INITIAL_COUNT.put(Fox.class,50);
+        INITIAL_COUNT.put(Bear.class,50);
+        INITIAL_COUNT.put(Eagle.class,50);
     }
 
     //1_Ключ-MAP - класс хищник, 2_Ключ-MAP - класс жертв, Значение - вероятность поедания;
