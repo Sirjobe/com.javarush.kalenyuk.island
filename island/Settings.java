@@ -153,7 +153,7 @@ public class Settings {
         ENTITY_ICONS.put(Deer.class,"\uD83E\uDD8C");
         ENTITY_ICONS.put(Rabbit.class,"\uD83D\uDC07");
         ENTITY_ICONS.put(Mouse.class,"\uD83D\uDC01");
-        ENTITY_ICONS.put(Goat.class,"\uD83D\uDC11");
+        ENTITY_ICONS.put(Goat.class," \uD83D\uDC10");
         ENTITY_ICONS.put(Sheep.class,"\uD83D\uDC11");
         ENTITY_ICONS.put(Buffalo.class,"\uD83D\uDC03");
         ENTITY_ICONS.put(Duck.class,"\uD83E\uDD86");

@@ -5,6 +5,7 @@ import island.entity.creature.Animal;
 import island.entity.creature.AnimalFactory;
 import island.entity.creature.Location;
 import island.entity.creature.animal.predactor.Predator;
+import island.entity.creature.plant.Plant;
 
 import java.io.Console;
 import java.util.HashMap;
@@ -145,6 +146,23 @@ public class Island {
         return allAnimalsDead || onlyHerbivoresLeft;
     }
     public void display(){
+        Map<Class<?extends Animal>,Integer> animalCounts = new HashMap<>();
+        int totalPlants = 0;
+        for (int i = 0; i < getWidth(); i++) {
+            for (int j = 0; j < getHeight(); j++) {
+                Location location = getLocation(i,j);
+                synchronized (location){
+                    //Считаем растения
+                    totalPlants +=location.getPlant().getCount();
+                    //Считаем животных
+                    location.getAnimals().forEach(animal -> {
+                        Class<?extends Animal> type = animal.getClass();
+                        animalCounts.put(type,animalCounts.getOrDefault(type,0)+1);
+                    });
+                }
+            }
+        }
+        // Вывод на экран
         for (int x = 0; x < getWidth(); x++) {
             for (int y = 0; y < getHeight(); y++) {
                 Location location = getLocation(x, y);
@@ -165,10 +183,19 @@ public class Island {
                     cellRepresentation.append(plantIcon).append(location.getPlant().getCount());
                 }
 
-                System.out.print("[" + cellRepresentation.toString().trim() + "]");
+                //System.out.print("[" + cellRepresentation.toString().trim() + "]");
             }
-            System.out.println();
+
+            //System.out.println();
         }
+        // Выводим общую статистику
+        System.out.println("Общая статистика:");
+        animalCounts.forEach((animalClass,count)->{
+            String name = animalClass.getSimpleName();
+            String icon = Settings.ENTITY_ICONS.getOrDefault(animalClass,"?");
+            System.out.printf("%s %s: %d\n",icon,name,count);
+        });
+        System.out.printf("Растения %s: %d\n\n", Settings.ENTITY_ICONS.get(Plant.class),totalPlants);
 
     }
 
