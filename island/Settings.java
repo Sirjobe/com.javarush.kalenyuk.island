@@ -17,20 +17,21 @@ public class Settings {
     //Количество животных создаваемых на острове
     public static final Map<Class<?extends Animal>,Integer> INITIAL_COUNT = new HashMap<>();
     static {
-        INITIAL_COUNT.put(Horse.class, 1000);
-        INITIAL_COUNT.put(Deer.class,1000);
-        INITIAL_COUNT.put(Rabbit.class,1000);
-        INITIAL_COUNT.put(Mouse.class,1000);
-        INITIAL_COUNT.put(Goat.class,1000);
-        INITIAL_COUNT.put(Sheep.class,1000);
-        INITIAL_COUNT.put(Buffalo.class,1000);
-        INITIAL_COUNT.put(Duck.class,100);
+        INITIAL_COUNT.put(Horse.class, 20);
+        INITIAL_COUNT.put(Deer.class,20);
+        INITIAL_COUNT.put(Rabbit.class,150);
+        INITIAL_COUNT.put(Mouse.class,500);
+        INITIAL_COUNT.put(Goat.class,140);
+        INITIAL_COUNT.put(Sheep.class,140);
+        INITIAL_COUNT.put(Hog.class,50);
+        INITIAL_COUNT.put(Buffalo.class,10);
+        INITIAL_COUNT.put(Duck.class,200);
         INITIAL_COUNT.put(Caterpillar.class,1000);
-        INITIAL_COUNT.put(Wolf.class,50);
-        INITIAL_COUNT.put(Boa.class,50);
-        INITIAL_COUNT.put(Fox.class,50);
-        INITIAL_COUNT.put(Bear.class,50);
-        INITIAL_COUNT.put(Eagle.class,50);
+        INITIAL_COUNT.put(Wolf.class,30);
+        INITIAL_COUNT.put(Boa.class,30);
+        INITIAL_COUNT.put(Fox.class,30);
+        INITIAL_COUNT.put(Bear.class,5);
+        INITIAL_COUNT.put(Eagle.class,20);
     }
 
     //1_Ключ-MAP - класс хищник, 2_Ключ-MAP - класс жертв, Значение - вероятность поедания;
@@ -137,6 +138,7 @@ public class Settings {
         OFFSPRING_COUNT.put(Mouse.class,1);
         OFFSPRING_COUNT.put(Goat.class,1);
         OFFSPRING_COUNT.put(Sheep.class,1);
+        OFFSPRING_COUNT.put(Hog.class,1);
         OFFSPRING_COUNT.put(Buffalo.class,1);
         OFFSPRING_COUNT.put(Duck.class,1);
         OFFSPRING_COUNT.put(Caterpillar.class,1);
@@ -155,6 +157,7 @@ public class Settings {
         ENTITY_ICONS.put(Mouse.class,"\uD83D\uDC01");
         ENTITY_ICONS.put(Goat.class," \uD83D\uDC10");
         ENTITY_ICONS.put(Sheep.class,"\uD83D\uDC11");
+        ENTITY_ICONS.put(Hog.class,"\uD83D\uDC17");
         ENTITY_ICONS.put(Buffalo.class,"\uD83D\uDC03");
         ENTITY_ICONS.put(Duck.class,"\uD83E\uDD86");
         ENTITY_ICONS.put(Caterpillar.class,"\uD83D\uDC1B");

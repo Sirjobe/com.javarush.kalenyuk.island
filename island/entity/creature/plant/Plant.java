@@ -2,18 +2,24 @@ package island.entity.creature.plant;
 
 import island.entity.creature.Eatable;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class Plant implements Eatable {
     private int count;
     private final int countMAX = 20;// 200
-    private final int weightPlant = 1;
-    private int growthRate = 3; // Скорость роста (каждые 10 тактов растет)
-    private int growthCounter = 0; //Счетчик тактов роста
+    private final int growthRate = 3; // Скорость роста (каждые 10 тактов растет)
+    private int growthCounter; //Счетчик тактов роста
 
+    public Plant(){
+    // Начальный growthCounter случайный
+    this.growthCounter = ThreadLocalRandom.current().nextInt(growthRate);
+    }
 
     public synchronized void grow(){
         growthCounter++;
-        if(count < countMAX && growthCounter >= growthRate){
+        if (growthCounter >= growthRate && count < countMAX) {
             count++;
+          //  System.out.println("Трава выросла: " + count); // Логирование
             growthCounter = 0;
         }
     }
@@ -27,6 +33,7 @@ public class Plant implements Eatable {
 
     @Override
     public double getNutritionalValue() {
+        int weightPlant = 1;
         return weightPlant;
     }
     public synchronized int getCount(){

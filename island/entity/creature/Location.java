@@ -44,12 +44,15 @@ public class Location {
         animals.remove(animal);
 
     }
-    public Animal getRandomHerbivore(){
-        List<Animal> herbivores = animals.stream()
-                .filter(a-> a instanceof Herbivore)
-                .toList();
-        return herbivores.isEmpty()? null : herbivores.get(ThreadLocalRandom.current().nextInt(herbivores.size()));
+    public Animal getRandomAnimal() {
+        synchronized (animals) {
+            if (animals.isEmpty()) return null;
+            List<Animal> animalList = new ArrayList<>(animals);
+            int randomIndex = ThreadLocalRandom.current().nextInt(animalList.size());
+            return animalList.get(randomIndex);
+        }
     }
+
     public void growPlants(){
         plant.grow();
     }

@@ -29,8 +29,8 @@ public class Application {
                     return;
                 }
                 // Обновление консоли и вывод текущего такта
-               // System.out.println("Такт: " + (cycle + 1)+" до изменений");
-               // island.display();
+                 System.out.println("Такт: " + (cycle + 1)+" до изменений");
+                 island.display();
                 // Выполнение логики симуляции для острова
                 island.interact();
                 // Обновление отображения острова

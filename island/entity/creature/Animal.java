@@ -5,6 +5,7 @@ import island.entity.Island;
 import island.entity.creature.animal.herbivore.Herbivore;
 import island.entity.creature.animal.predactor.Predator;
 import island.entity.creature.animal.predactor.Wolf;
+import island.entity.creature.plant.Plant;
 
 import java.util.List;
 import java.util.Map;
@@ -85,79 +86,87 @@ public abstract class Animal implements Eatable {
            }
         }
     }
-    // Питание (Переписать с учетом, что все могут есть траву, а также реализовать много поточный Random)
+    // Питание
     public void eat (Location location) {
+            Random random = ThreadLocalRandom.current();
+            if (this instanceof Herbivore) {
+                Plant plant = location.getPlant();
+                double plantProbability = getEatingProbability(plant);
 
-        if (this instanceof Herbivore) {
-            synchronized (location) {
-                if (location.getPlant().getCount() > 0 && ThreadLocalRandom.current().nextDouble() < getEatingProbability(location.getPlant())) {
-                    if (location.getPlant().consume()) {
-                        this.satiety = Math.min(this.foodNeeded, this.satiety + location.getPlant().getNutritionalValue());
+                if (plant.getCount() > 0 && random.nextDouble() < plantProbability) {
+                    if (plant.consume()) {
+                        double newSatiety = this.satiety + plant.getNutritionalValue();
+                        this.satiety = Math.min(this.foodNeeded, newSatiety);
                         return;
                     }
                 }
-                //Попытка съесть другое травоядное
-                Animal eatHerbivore = location.getRandomHerbivore();
-                if (eatHerbivore != null && ThreadLocalRandom.current().nextDouble() < getEatingProbability(eatHerbivore)) {
-                    location.removeAnimal(eatHerbivore);
-                    this.satiety = Math.min(this.foodNeeded, this.satiety + eatHerbivore.getNutritionalValue());
-                    return;
+                // Попытка съесть другое травоядное
+                Animal eatHerbivore = location.getRandomAnimal();
+                if (eatHerbivore != null) {
+                    double herbivoreProbability = getEatingProbability(eatHerbivore);
+                    if (random.nextDouble() < herbivoreProbability) {
+                        location.removeAnimal(eatHerbivore);
+                        double newSatiety = this.satiety + eatHerbivore.getNutritionalValue();
+                        this.satiety = Math.min(this.foodNeeded, newSatiety);
+                        return;
+                    }
                 }
                 this.decreaseSatiety();
-            }
-        } else if (this instanceof Predator) {
-            synchronized (location) {
-                Animal prey = location.getRandomHerbivore();
-                if (prey != null && ThreadLocalRandom.current().nextDouble() < getEatingProbability(prey)) {
-                    location.removeAnimal(prey);
-                    this.satiety = Math.min(this.foodNeeded, this.satiety + prey.getNutritionalValue());
+            } else if (this instanceof Predator) {
+                Animal prey = location.getRandomAnimal();
+                if (prey != null) {
+                    double preyProbability = getEatingProbability(prey);
+                    if (random.nextDouble() < preyProbability) {
+                        location.removeAnimal(prey);
+                        double newSatiety = this.satiety + prey.getNutritionalValue();
+                        this.satiety = Math.min(this.foodNeeded, newSatiety);
+                    } else {
+                        this.decreaseSatiety();
+                    }
                 } else {
                     this.decreaseSatiety();
                 }
             }
-        }
-
-
     }
     // Размножение
     public static void reproduce(Location location) {
         synchronized (location) {
-            // Проверяем, достаточно ли травы для размножения
-            if (location.getPlant().getCount() < location.getPlant().getCountMAX() / 2 && location.getAnimals() instanceof Herbivore) {
+            // Проверяем, достаточно ли травы для размножения травоядных
+            boolean hasHerbivores = location.getAnimals().stream()
+                    .anyMatch(animal -> animal instanceof Herbivore);
+            if (location.getPlant().getCount() < location.getPlant().getCountMAX() / 2 && hasHerbivores) {
                 return; // Недостаточно травы для размножения
             }
 
-
-            //Группируем животных по их типам
-            Map<Class<?extends Animal>, List<Animal>> groupedAnimals = location.getAnimals().stream()
+            // Группируем животных по их типам
+            Map<Class<? extends Animal>, List<Animal>> groupedAnimals = location.getAnimals().stream()
                     .collect(Collectors.groupingBy(Animal::getClass));
-            //Перебираем животных
-            groupedAnimals.forEach(((aClass, animals) -> {
-                int pairCount = animals.size() / 2; //кол-во пар
-                int offspringCount = Settings.OFFSPRING_COUNT.getOrDefault(aClass,1);
+
+            // Перебираем животных
+            groupedAnimals.forEach((aClass, animals) -> {
+                int pairCount = animals.size() / 2; // кол-во пар
+                int offspringCount = Settings.OFFSPRING_COUNT.getOrDefault(aClass, 1);
+
                 for (int i = 0; i < pairCount; i++) {
-                    Animal animal1 = animals.get(i*2);
-                    Animal animal2 = animals.get(i*2+1);
+                    Animal animal1 = animals.get(i * 2);
+                    Animal animal2 = animals.get(i * 2 + 1);
+
                     // Проверяем, что сытость обоих животных меньше 1/3 от foodNeeded
                     if (animal1.getSatiety() < animal1.getFoodNeeded() / 3 &&
                             animal2.getSatiety() < animal2.getFoodNeeded() / 3) {
+
                         for (int j = 0; j < offspringCount; j++) {
-                            if (location.canAddAnimal(animals.getFirst())) {//Проверка можно ли добавить животное
+                            if (location.canAddAnimal(animal1)) { // Проверка можно ли добавить животное
                                 Animal newAnimal = AnimalFactory.create(aClass);
                                 location.addAnimal(newAnimal);
+                                System.out.println(aClass.getSimpleName() + " размножились. Новое животное добавлено.");
                             } else {
                                 break;
                             }
                         }
                     }
-
-
                 }
-
-            }));
-
-
-
+            });
         }
     }
 
