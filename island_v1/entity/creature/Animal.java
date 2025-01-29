@@ -46,7 +46,7 @@ public abstract class Animal implements Eatable {
     }
     // метод для уменьшения сытости
     public void decreaseSatiety(){
-        this.satiety = Math.max(0, this.satiety - island_v2_beta.Settings.SATIETY_DECREASE_PER_ITERATION);
+        this.satiety = Math.max(0, this.satiety - island_v2.Settings.SATIETY_DECREASE_PER_ITERATION);
     }
 
     public double getEatingProbability (Eatable target){
