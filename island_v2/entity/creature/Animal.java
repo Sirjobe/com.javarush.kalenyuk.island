@@ -42,7 +42,7 @@ public abstract class Animal implements Eatable {
     }
     // флаг смерти животного
     public boolean isDead(){
-        return this.satiety<=0;
+        return this.satiety<=0.00;
     }
     // метод для уменьшения сытости
     public void decreaseSatiety(){
@@ -67,66 +67,17 @@ public abstract class Animal implements Eatable {
             Location currentLocation = island.getLocation(currentX,currentY);
             Location newLocation = island.getLocation(newX,newY);
             // Блокировка в порядке возрастания координат для избежания deadlock
-           if(currentX< newX||(currentX == newX && currentY<newY)){
-               currentLocation.lock();
-               newLocation.lock();
-           }else {
-               newLocation.lock();
-               currentLocation.lock();
-           }
-           try {
-               currentLocation.removeAnimal(this);
-               newLocation.addAnimal(this);
-           }finally {
-               currentLocation.unlock();
-               newLocation.unlock();
+           if(newLocation.tryLock()) {
+               try {
+                   currentLocation.removeAnimal(this);
+                   newLocation.addAnimal(this);
+               } finally {
+                   newLocation.unlock();
+               }
            }
         }
     }
     // Питание
-//     public void eat (Location location) {
-//            Random random = ThreadLocalRandom.current();
-//            boolean hasEaten = false; // Флаг, указывающий, что животное уже поело
-//            if (this instanceof Herbivore) {
-//                Plant plant = location.getPlant();
-//                double plantProbability = getEatingProbability(plant);
-//                if (!hasEaten && plant.getCount() > 0 && random.nextDouble() < plantProbability) {
-//                    if (plant.consume()) {
-//                        double newSatiety = this.satiety + plant.getNutritionalValue();
-//                        this.satiety = Math.min(this.foodNeeded, newSatiety);
-//                        hasEaten = true;
-//                    }
-//                }
-//                // Попытка съесть другое травоядное
-//                if(!hasEaten) {
-//                    Animal eatHerbivore = location.getRandomAnimal();
-//                    if (eatHerbivore != null) {
-//                        double herbivoreProbability = getEatingProbability(eatHerbivore);
-//                        if (random.nextDouble() < herbivoreProbability) {
-//                            location.removeAnimal(eatHerbivore);
-//                            double newSatiety = this.satiety + eatHerbivore.getNutritionalValue();
-//                            this.satiety = Math.min(this.foodNeeded, newSatiety);
-//                            hasEaten = true;
-//                        }
-//                    }
-//                }
-//            } else if (this instanceof Predator) {
-//                Animal prey = location.getRandomAnimal();
-//                if (prey != null) {
-//                    double preyProbability = getEatingProbability(prey);
-//                    if (random.nextDouble() < preyProbability) {
-//                        location.removeAnimal(prey);
-//                        double newSatiety = this.satiety + prey.getNutritionalValue();
-//                        this.satiety = Math.min(this.foodNeeded, newSatiety);
-//                     //   System.out.println(this.getClass().getSimpleName() + " съел " + prey.getClass().getSimpleName());
-//                    } else {
-//                        this.decreaseSatiety();
-//                    }
-//                } else {
-//                    this.decreaseSatiety();
-//                }
-//            }
-//    }
     public void eat(Location location) {
         Random random = ThreadLocalRandom.current();
         boolean hasEaten = false; // Флаг, указывающий, что животное уже поело
@@ -161,19 +112,19 @@ public abstract class Animal implements Eatable {
             }
         } else if (this instanceof Predator) {
             // Попытка съесть другое животное (для хищников)
-            if (!hasEaten) {
+
                 Animal prey = location.getRandomAnimal();
-                if (prey != null) {
+                if (prey != null && !hasEaten) {
                     double preyProbability = getEatingProbability(prey);
                     if (random.nextDouble() < preyProbability) {
                         location.removeAnimal(prey);
                         double newSatiety = this.satiety + prey.getNutritionalValue();
                         this.satiety = Math.min(this.foodNeeded, newSatiety);
-                        //System.out.println(this.getClass().getSimpleName() + " съел " + prey.getClass().getSimpleName() + ". Сытость: " + this.satiety);
+                      //  System.out.println(this.getClass().getSimpleName() + " съел " + prey.getClass().getSimpleName() + ". Сытость: " + this.satiety);
                         hasEaten = true;
                     }
                 }
-            }
+
         }
 
         // Если животное не поело, уменьшаем сытость

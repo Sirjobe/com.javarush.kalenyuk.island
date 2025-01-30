@@ -13,19 +13,11 @@ public class Location {
     private final int y;
     private final Queue<Animal> animals = new ConcurrentLinkedQueue<>();
     private final Plant plant = new Plant();
-    private  final ReentrantLock lock = new ReentrantLock();
+    private  final ReentrantLock lock = new ReentrantLock(true);
 
     public Location(int x, int y){
         this.x = x;
         this.y = y;
-    }
-
-    public int getX(){
-        return x;
-    }
-
-    public int getY(){
-        return y;
     }
 
     public void lock(){
@@ -34,6 +26,7 @@ public class Location {
     public void unlock(){
         lock.unlock();
     }
+    public boolean tryLock() { return lock.tryLock();}
 
     public Queue<Animal> getAnimals(){
         return animals;

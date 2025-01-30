@@ -13,7 +13,7 @@ public class Settings {
     public static final int ISLAND_WIDTH = 100;
     public static final int ISLAND_HEIGHT = 20;
     // Фиксированное значение снижения сытости за одну итерацию
-    public static final double SATIETY_DECREASE_PER_ITERATION = 2;
+    public static final double SATIETY_DECREASE_PER_ITERATION = 0.5;
     //Количество животных создаваемых на острове
     public static final Map<Class<?extends Animal>,Integer> INITIAL_COUNT = new HashMap<>();
     static {
@@ -24,13 +24,13 @@ public class Settings {
         INITIAL_COUNT.put(Goat.class,140);// 140
         INITIAL_COUNT.put(Sheep.class,140);// 140
         INITIAL_COUNT.put(Hog.class,50);// 50
-        INITIAL_COUNT.put(Buffalo.class,10);// 10
+        INITIAL_COUNT.put(Buffalo.class,100);// 10
         INITIAL_COUNT.put(Duck.class,200);// 200
         INITIAL_COUNT.put(Caterpillar.class,1000);// 1000
         INITIAL_COUNT.put(Wolf.class,30);// 30
         INITIAL_COUNT.put(Boa.class,30);// 30
         INITIAL_COUNT.put(Fox.class,30);// 30
-        INITIAL_COUNT.put(Bear.class,5);// 5
+        INITIAL_COUNT.put(Bear.class,100);// 5
         INITIAL_COUNT.put(Eagle.class,20);// 20
     }
 

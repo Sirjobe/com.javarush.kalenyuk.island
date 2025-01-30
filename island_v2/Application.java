@@ -9,16 +9,18 @@ public class Application {
         //Заселяем остров
         Island.populateIsland(island);
         //Запускаем симуляцию
+
         island.startSimulation();
-//        try {
-//            Thread.sleep(6000);
-//            island.startSimulation();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-        if(island.checkGameOver()){
-            island.stopSimulation();
+        try{
+            Thread.sleep(60000);
+            System.out.println("Симуляция завершена!");
+            island.schedulerShutdown();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
+
+
+
 
     }
 }

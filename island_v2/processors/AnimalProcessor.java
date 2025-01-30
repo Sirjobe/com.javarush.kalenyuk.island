@@ -9,34 +9,35 @@ import java.util.concurrent.Executors;
 
 public class AnimalProcessor {
     private final Island island;
-    private final ExecutorService executor;
+    private final ExecutorService executor = Executors.newWorkStealingPool();
+    int finalX;
+    int finalY;
 
     public AnimalProcessor(Island island){
         this.island = island;
-        this.executor = Executors.newWorkStealingPool();
     }
-    public void process(){
-        for (int x = 0; x < island.getWidth(); x++){
-            for (int y = 0; y < island.getHeight(); y++ ){
-                Location location = island.getLocation(x,y);
-                executor.submit(()-> processLocation(location));
-            }
-        }
-    }
-    public void processLocation(Location location){
-        synchronized (location){
-            location.getAnimals().forEach(animal -> {
-                if(animal.isDead()){
-                    location.removeAnimal(animal);
-                    return;
+    public void process() {
+        executor.submit(() -> {
+            for (int x = 0; x < island.getWidth(); x++) {
+                for (int y = 0; y < island.getHeight(); y++) {
+                    Location location = island.getLocation(x, y);
+                    location.lock();
+                    try {
+                        //Удаляем мертвых животных
+                        location.getAnimals().removeIf(Animal::isDead);
+                        finalX = x;
+                        finalY = y;
+                        location.getAnimals().forEach(animal -> {
+                            animal.eat(location);
+                            animal.move(island, finalX, finalY);
+                        });
+                        Animal.reproduce(location);
+                    } finally {
+                        location.unlock();
+                    }
                 }
-                animal.eat(location);
-                animal.move(island,location.getX(),location.getY());
-            });
-            Animal.reproduce(location);
-        }
+            }
+        });
     }
-    public void shutdown(){
-        executor.shutdown();
-    }
+
 }

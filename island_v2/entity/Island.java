@@ -21,7 +21,8 @@ public class Island {
     private final AnimalProcessor animalProcessor;
     private final PlantProcessor plantProcessor;
     private final StatisticsService statisticsService;
-    private final ScheduledExecutorService scheduler;
+   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
+    private int day = 1;
 
 
     public Island (int columnsCount, int rowsCount){
@@ -34,7 +35,21 @@ public class Island {
         this.animalProcessor = new AnimalProcessor(this);
         this.plantProcessor = new PlantProcessor(this);
         this.statisticsService = new StatisticsService(this);
-        this.scheduler = Executors.newScheduledThreadPool(3);
+    }
+    public void startSimulation(){
+        // обработка животных каждую секунду
+        scheduler.scheduleAtFixedRate(()->{
+            System.out.println("\n--- День " + day + " ---");
+            animalProcessor.process();
+            plantProcessor.process();
+            statisticsService.display();
+            day++;
+            // Проверка завершения ПОСЛЕ обработки
+//            if (checkGameOver()) {
+//                System.out.println("Симуляция завершена");
+//                scheduler.shutdown();
+//            }
+        }, 0,1,TimeUnit.SECONDS);
     }
 
     public Location getLocation(int columnsCount, int rowsCount){
@@ -50,16 +65,6 @@ public class Island {
         return  locations[0].length;
     }
 
-//    public boolean hasAliveAnimals(){
-//        for (Location[] row : locations){
-//            for (Location location : row){
-//                if(!location.getAnimals().isEmpty()){
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//    }
 
     private static boolean allAnimalsCreated(Map<Class<? extends Animal>, Integer> counts,
                                              Map<Class<? extends Animal>, Integer> limits) {
@@ -91,92 +96,39 @@ public class Island {
                     if(location.canAddAnimal(newAnimal)){
                         location.addAnimal(newAnimal);
                         animalCounts.put(animalType,animalCounts.get(animalType)+1);
-                    //    System.out.println("Создано: " + animalType.getSimpleName() + " в локации (" + x + ", " + y + ")");
+                        //System.out.println("Создано: " + animalType.getSimpleName() + " в локации (" + x + ", " + y + ")");
                     }
                 }
             }
         }
     }
-//    public void interact(){
-//        // Аул потоков для параллельной обработки локаций
-//        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-//        for (int x=0; x<getWidth(); x++){
-//            for (int y=0; y<getHeight();y++){
-//                final int currentX = x; // Создаём локальную копию
-//                final int currentY = y; // Создаём локальную копию
-//                executor.submit(()->{
-//                    Location location = getLocation(currentX,currentY);
-//                    synchronized (location) {
-//                        location.getAnimals().forEach(animal -> {
-//                            if (animal.isDead()) {
-//                                location.removeAnimal(animal);
-//                                return;
-//                            }
-//                            animal.eat(location);
-//                        });
-//                        // Обработка размножения для всех животных
-//                        Animal.reproduce(location);
-//                        // Перемещение животных
-//                        location.getAnimals().forEach(animal -> animal.move(this,currentX,currentY));
-//                        // Удаление мертвых животных
-//                        location.getAnimals().removeIf(Animal::isDead);
-//                        //Рост растений
-//                        location.growPlants();
-//                    }
-//                });
-//            }
-//        }
-//        executor.shutdown();
-//        try {
-//            executor.awaitTermination(1, TimeUnit.MINUTES);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
 
     public boolean checkGameOver() {
         boolean allAnimalsDead = true;
-        boolean onlyHerbivoresLeft = true;
+        boolean hasPredators = false;
 
         for (int x = 0; x < getWidth(); x++) {
             for (int y = 0; y < getHeight(); y++) {
                 Location location = getLocation(x, y);
-                synchronized (location) {
+                location.lock();
+                try {
                     if (!location.getAnimals().isEmpty()) {
-                        allAnimalsDead = false; // Есть живые животные
-
-                        // Проверяем, есть ли хищники
+                        allAnimalsDead = false;
                         for (Animal animal : location.getAnimals()) {
                             if (animal instanceof Predator) {
-                                onlyHerbivoresLeft = false; // Найден хищник
+                                hasPredators = true;
                                 break;
                             }
                         }
                     }
+                } finally {
+                    location.unlock();
                 }
             }
         }
-
-        // Условие завершения: все животные умерли или остались только травоядные
-        return allAnimalsDead || onlyHerbivoresLeft;
+        return allAnimalsDead || !hasPredators;
     }
-
-    public void  startSimulation(){
-        // Запуск обработки животных каждую секунду
-        scheduler.scheduleAtFixedRate(animalProcessor::process, 0, 1, TimeUnit.SECONDS);
-
-        // Запуск обработки растений каждые 2 секунды
-        scheduler.scheduleAtFixedRate(plantProcessor::process, 0, 2, TimeUnit.SECONDS);
-
-        // Запуск вывода статистики каждые 3 секунды
-        scheduler.scheduleAtFixedRate(statisticsService::display, 0, 3, TimeUnit.SECONDS);
+    public void schedulerShutdown(){
+         scheduler.shutdown();
     }
-
-    public void stopSimulation(){
-        scheduler.shutdown();
-        animalProcessor.shutdown();
-        plantProcessor.shutdown();
-    }
-
 }
