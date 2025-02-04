@@ -22,7 +22,7 @@ public class Application {
         StatisticsService statisticsService = new StatisticsService(island);
 
         // Создаем планировщик задач
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(8);
 
         // Запускаем рост растений каждые 5 секунд
         scheduler.scheduleAtFixedRate(plantProcessor::growPlants, 0, 5, TimeUnit.SECONDS);
@@ -30,9 +30,9 @@ public class Application {
         scheduler.scheduleAtFixedRate(animalProcessor::process, 0, 2, TimeUnit.SECONDS);
         // Выводим статистику каждые 10 секунд
         scheduler.scheduleAtFixedRate(statisticsService::display, 0, 10, TimeUnit.SECONDS);
+        Thread.getAllStackTraces().keySet().forEach(thread ->
+           System.out.println(thread.getName() + " - " + thread.getState()));
         // Запускаем симуляцию на 1 минуту
-//        Thread.getAllStackTraces().keySet().forEach(thread ->
-//                System.out.println(thread.getName() + " - " + thread.getState()));
         try {
             Thread.sleep(60000);
         } catch (InterruptedException e) {
@@ -41,6 +41,7 @@ public class Application {
 
         System.out.println("Симуляция завершена!");
         scheduler.shutdown();
+        animalProcessor.shutdown();
     }
 }
 

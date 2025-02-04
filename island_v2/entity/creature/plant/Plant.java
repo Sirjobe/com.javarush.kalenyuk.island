@@ -5,12 +5,12 @@ import island_v2.entity.creature.Location;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-
 public class Plant implements Eatable {
     private int count;
     private final int countMAX = 20;// 200
     private final int growthRate = 3; // Скорость роста (каждые 10 тактов растет)
     private int growthCounter; //Счетчик тактов роста
+
     public Plant(){
     // Начальный growthCounter случайный
     this.growthCounter = ThreadLocalRandom.current().nextInt(growthRate);
@@ -23,13 +23,13 @@ public class Plant implements Eatable {
             if (growthCounter >= growthRate) {
                 if (count < countMAX) {
                     count++;
-                   // System.out.println("Трава выросла на локации: " + location + " (Всего: " + count + ")");
+                  //  System.out.println("Трава выросла на локации: " + location + " (Всего: " + count + ")");
                 }
                 growthCounter = 0; // Сбрасываем счетчик только после проверки
             }
         }
     }
-    public boolean consume(){
+    public synchronized boolean consume(){
         if(count>0){
             count--;
             return true;
@@ -42,13 +42,13 @@ public class Plant implements Eatable {
         int weightPlant = 1;
         return weightPlant;
     }
-    public  int getCount(){ // synchronized
+    public synchronized int getCount(){ // synchronized
         return count;
     }
-    public  int getCountMAX(){ // synchronized
+    public synchronized int getCountMAX(){ // synchronized
         return countMAX;
     }
-    public  void setCount(int count){ // synchronized
+    public synchronized void setCount(int count){ // synchronized
         this.count = Math.min(count,countMAX);
     }
 

@@ -21,7 +21,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Island {
     private final Location[][] locations;
     private final Lock lock = new ReentrantLock(); // Глобальная блокировка для острова
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
 
 
     public Island (int columnsCount, int rowsCount){

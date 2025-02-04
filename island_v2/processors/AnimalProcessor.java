@@ -6,6 +6,7 @@ import island_v2.entity.creature.Location;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 public class AnimalProcessor {
@@ -28,20 +29,30 @@ public class AnimalProcessor {
 
     private void processLocation(int x, int y) {
         Location location = island.getLocation(x, y);
-        location.lock();
-        try {
-            location.getAnimals().removeIf(Animal::isDead);
-            location.getAnimals().forEach(animal -> {
-                animal.eat(location);
-                animal.move(island, x, y);
-            });
-            Animal.reproduce(location);
-        } finally {
-            location.unlock();
+        if (location.tryLock()) {
+            try {
+                location.getAnimals().removeIf(Animal::isDead);
+                location.getAnimals().forEach(animal -> {
+                    animal.eat(location);
+                    animal.move(island, x, y);
+                });
+                Animal.reproduce(location);
+            } finally {
+                location.unlock();
+            }
         }
     }
 
-
+    public void shutdown() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
+    }
 }
 
 
