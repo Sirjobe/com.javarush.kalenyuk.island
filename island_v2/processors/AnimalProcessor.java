@@ -9,20 +9,22 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
-public class AnimalProcessor {
+public class AnimalProcessor implements Runnable{
     private final Island island;
-    private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private final ExecutorService processorExecutor;
 
     public AnimalProcessor(Island island) {
         this.island = island;
+        this.processorExecutor = Executors.newWorkStealingPool();
     }
 
-    public void process() {
+    @Override
+    public void run() {
         for (int x = 0; x < island.getWidth(); x++) {
             for (int y = 0; y < island.getHeight(); y++) {
                 final int finalX = x;
                 final int finalY = y;
-                executor.submit(() -> processLocation(finalX, finalY));
+                processorExecutor.submit(() -> processLocation(finalX, finalY));
             }
         }
     }
@@ -43,16 +45,7 @@ public class AnimalProcessor {
         }
     }
 
-    public void shutdown() {
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            executor.shutdownNow();
-        }
-    }
 }
+
 
 

@@ -24,14 +24,14 @@ public class Application {
         // Создаем планировщик задач
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(8);
 
+        // Запуск всех компонентов
         // Запускаем рост растений каждые 5 секунд
-        scheduler.scheduleAtFixedRate(plantProcessor::growPlants, 0, 5, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> new Thread(animalProcessor).start(), 0, 2, TimeUnit.SECONDS);
         // Запускаем жизненный цикл животных каждые 2 секунды
-        scheduler.scheduleAtFixedRate(animalProcessor::process, 0, 2, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> new Thread(plantProcessor).start(), 0, 5, TimeUnit.SECONDS);
         // Выводим статистику каждые 10 секунд
         scheduler.scheduleAtFixedRate(statisticsService::display, 0, 10, TimeUnit.SECONDS);
-        Thread.getAllStackTraces().keySet().forEach(thread ->
-           System.out.println(thread.getName() + " - " + thread.getState()));
+
         // Запускаем симуляцию на 1 минуту
         try {
             Thread.sleep(60000);
@@ -41,7 +41,7 @@ public class Application {
 
         System.out.println("Симуляция завершена!");
         scheduler.shutdown();
-        animalProcessor.shutdown();
+
     }
 }
 
