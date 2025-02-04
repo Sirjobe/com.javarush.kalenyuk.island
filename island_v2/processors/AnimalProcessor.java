@@ -6,7 +6,6 @@ import island_v2.entity.creature.Location;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 
 public class AnimalProcessor {
@@ -42,16 +41,7 @@ public class AnimalProcessor {
         }
     }
 
-    public void shutdown() {
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            executor.shutdownNow();
-        }
-    }
+
 }
 
 
