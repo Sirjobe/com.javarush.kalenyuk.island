@@ -60,7 +60,4 @@ public class Location {
         }
     }
 
-    public void growPlants(){
-        plant.grow();
-    }
 }

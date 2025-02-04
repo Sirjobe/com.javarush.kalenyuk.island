@@ -15,14 +15,13 @@ import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Island {
     private final Location[][] locations;
-    private final AnimalProcessor animalProcessor;
-    private final PlantProcessor plantProcessor;
-    private final StatisticsService statisticsService;
-   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
-    private int day = 1;
+    private final Lock lock = new ReentrantLock(); // Глобальная блокировка для острова
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
 
 
     public Island (int columnsCount, int rowsCount){
@@ -32,24 +31,6 @@ public class Island {
                 locations[i][j] = new Location(i,j);
             }
         }
-        this.animalProcessor = new AnimalProcessor(this);
-        this.plantProcessor = new PlantProcessor(this);
-        this.statisticsService = new StatisticsService(this);
-    }
-    public void startSimulation(){
-        // обработка животных каждую секунду
-        scheduler.scheduleAtFixedRate(()->{
-            System.out.println("\n--- День " + day + " ---");
-            animalProcessor.process();
-            plantProcessor.process();
-            statisticsService.display();
-            day++;
-            // Проверка завершения ПОСЛЕ обработки
-//            if (checkGameOver()) {
-//                System.out.println("Симуляция завершена");
-//                scheduler.shutdown();
-//            }
-        }, 0,1,TimeUnit.SECONDS);
     }
 
     public Location getLocation(int columnsCount, int rowsCount){
@@ -103,32 +84,6 @@ public class Island {
         }
     }
 
-    public boolean checkGameOver() {
-        boolean allAnimalsDead = true;
-        boolean hasPredators = false;
 
-        for (int x = 0; x < getWidth(); x++) {
-            for (int y = 0; y < getHeight(); y++) {
-                Location location = getLocation(x, y);
-                location.lock();
-                try {
-                    if (!location.getAnimals().isEmpty()) {
-                        allAnimalsDead = false;
-                        for (Animal animal : location.getAnimals()) {
-                            if (animal instanceof Predator) {
-                                hasPredators = true;
-                                break;
-                            }
-                        }
-                    }
-                } finally {
-                    location.unlock();
-                }
-            }
-        }
-        return allAnimalsDead || !hasPredators;
-    }
-    public void schedulerShutdown(){
-         scheduler.shutdown();
-    }
+
 }

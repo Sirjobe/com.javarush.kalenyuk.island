@@ -1,6 +1,7 @@
 package island_v2.entity.creature.plant;
 
 import island_v2.entity.creature.Eatable;
+import island_v2.entity.creature.Location;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -15,12 +16,17 @@ public class Plant implements Eatable {
     this.growthCounter = ThreadLocalRandom.current().nextInt(growthRate);
     }
 
-    public synchronized void grow(){
-        growthCounter++;
-        if (growthCounter >= growthRate && count < countMAX) {
-            count++;
-          //  System.out.println("Трава выросла: " + count); // Логирование
-            growthCounter = 0;
+    public void grow(Location location) {
+        synchronized (location) {  // Блокируем только конкретную локацию, а не весь класс
+            growthCounter++;
+
+            if (growthCounter >= growthRate) {
+                if (count < countMAX) {
+                    count++;
+                    System.out.println("Трава выросла на локации: " + location + " (Всего: " + count + ")");
+                }
+                growthCounter = 0; // Сбрасываем счетчик только после проверки
+            }
         }
     }
     public synchronized boolean consume(){
@@ -36,16 +42,14 @@ public class Plant implements Eatable {
         int weightPlant = 1;
         return weightPlant;
     }
-    public synchronized int getCount(){
+    public synchronized int getCount(){ // synchronized
         return count;
     }
-    public int getCountMAX(){
+    public synchronized int getCountMAX(){ // synchronized
         return countMAX;
     }
-    public synchronized void setCount(int count){
+    public synchronized void setCount(int count){ // synchronized
         this.count = Math.min(count,countMAX);
     }
-    public synchronized boolean canGrow(){
-        return growthCounter > growthRate && count < countMAX;
-    }
+
 }
